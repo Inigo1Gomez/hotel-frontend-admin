@@ -119,6 +119,9 @@ Requisitos: Node 22.12 o superior (Angular 21).
 En local el navegador llama a `/api/usuarios/...` y `/api/reservas/...`; `proxy.conf.json` los reenvía a los
 microservicios, así que no hace falta CORS.
 
+Si los microservicios ya corren en la EC2, usa `npm run start:ec2`: es lo mismo, pero el proxy
+(`proxy.ec2.conf.json`) apunta a la IP elástica `52.201.204.202` en vez de a `localhost`.
+
 ## 3. Publicar en GitHub Pages
 
 1. En `src/environments/environment.ts` pon la URL de tu API Gateway:

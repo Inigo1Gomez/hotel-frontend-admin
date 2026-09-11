@@ -1,0 +1,14 @@
+{
+  "/api/usuarios": {
+    "target": "http://52.201.204.202:8082",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": { "^/api/usuarios": "" }
+  },
+  "/api/reservas": {
+    "target": "http://52.201.204.202:8081",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": { "^/api/reservas": "" }
+  }
+}
