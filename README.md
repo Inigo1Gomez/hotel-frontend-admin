@@ -3,7 +3,7 @@
 Panel interno del hotel (administradores y empleados). Angular 21 + **MSAL Angular v5** con login en
 **Microsoft Entra ID**. Consume dos microservicios:
 
-| Microservicio       | Qué usa el panel                                         | Validación del token            |
+| Micro-servicio       | Qué usa el panel                                         | Validación del token            |
 | ------------------- | -------------------------------------------------------- | ------------------------------- |
 | `hotel-ms-usuarios` | CRUD de administradores/empleados (`/api/v1/users/admin`) | `jsonwebtoken` + JWKS de Entra  |
 | `hotel-ms-reservas` | Registrar reservas (`/api/v1/user/reservas`) y `/api/v1/me` | `passport-azure-ad`             |
