@@ -1,0 +1,38 @@
+@if (auth.isLoggedIn()) {
+  <div class="shell">
+    <aside class="sidebar">
+      <a class="brand" routerLink="/dashboard">
+        <span class="brand-mark" aria-hidden="true">H</span>
+        <span>Hotel <strong>Admin</strong></span>
+      </a>
+
+      <nav class="nav" aria-label="Secciones">
+        <a routerLink="/dashboard" routerLinkActive="active">Resumen</a>
+        <a routerLink="/usuarios" routerLinkActive="active">Usuarios</a>
+        <a routerLink="/reservas" routerLinkActive="active">Reservas</a>
+      </nav>
+
+      <div class="session">
+        <p class="session-name">{{ auth.displayName() }}</p>
+        <p class="session-mail">{{ auth.account()?.username }}</p>
+        <div class="chips">
+          @for (role of auth.roles(); track role) {
+            <span class="chip">{{ role }}</span>
+          } @empty {
+            <span class="chip chip-muted">sin roles</span>
+          }
+        </div>
+        <button type="button" class="btn btn-ghost" (click)="auth.logout()">Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      @if (auth.error(); as error) {
+        <p class="alert alert-error">{{ error }}</p>
+      }
+      <router-outlet />
+    </main>
+  </div>
+} @else {
+  <router-outlet />
+}

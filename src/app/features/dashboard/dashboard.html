@@ -1,0 +1,110 @@
+<header class="page-header">
+  <div>
+    <h1>Hola, {{ auth.displayName() }}</h1>
+    <p>Estado de los microservicios y del token con que la app los consume.</p>
+  </div>
+  <button type="button" class="btn btn-ghost" (click)="revisarServicios(); probarToken()">Actualizar</button>
+</header>
+
+<div class="grid">
+  <section class="card">
+    <h2 class="card-title">Microservicios</h2>
+    <div class="table-wrap">
+      <table>
+        <tbody>
+          @for (servicio of servicios; track servicio.nombre) {
+            <tr>
+              <td>
+                <strong>{{ servicio.nombre }}</strong><br />
+                <code class="muted">{{ servicio.url }}</code>
+              </td>
+              <td class="actions">
+                @switch (servicio.estado()) {
+                  @case ('ok') {
+                    <span class="badge badge-ok">en línea</span>
+                  }
+                  @case ('error') {
+                    <span class="badge badge-off">sin respuesta</span>
+                  }
+                  @default {
+                    <span class="badge badge-wait">revisando…</span>
+                  }
+                }
+              </td>
+            </tr>
+            @if (servicio.detalle()) {
+              <tr>
+                <td colspan="2" class="muted small">{{ servicio.detalle() }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">Access token (leído en el front)</h2>
+    @if (auth.apiClaims(); as claims) {
+      <dl class="claims">
+        <dt>roles</dt>
+        <dd>
+          <span class="chips">
+            @for (role of auth.roles(); track role) {
+              <span class="chip">{{ role }}</span>
+            } @empty {
+              <span class="muted">sin app roles asignados</span>
+            }
+          </span>
+        </dd>
+        <dt>scp</dt>
+        <dd>
+          <span class="chips">
+            @for (scope of auth.scopes(); track scope) {
+              <span class="chip">{{ scope }}</span>
+            } @empty {
+              <span class="muted">—</span>
+            }
+          </span>
+        </dd>
+        <dt>aud</dt>
+        <dd>{{ claims.aud }}</dd>
+        <dt>iss</dt>
+        <dd>{{ claims.iss }}</dd>
+        <dt>oid</dt>
+        <dd>{{ claims.oid }}</dd>
+        <dt>exp</dt>
+        <dd>{{ expira() | date: 'dd-MM-yyyy HH:mm:ss' }}</dd>
+      </dl>
+    } @else {
+      <p class="muted">Obteniendo token para la API…</p>
+    }
+  </section>
+</div>
+
+<section class="card">
+  <h2 class="card-title">
+    Validación en el backend
+    <button type="button" class="btn btn-ghost btn-sm" [disabled]="probando()" (click)="probarToken()">Probar de nuevo</button>
+  </h2>
+  <p class="muted small">
+    <code>GET /api/v1/me</code> en hotel-ms-reservas: el microservicio verifica firma, issuer, audience y vigencia del
+    token con passport-azure-ad y devuelve los claims que aceptó.
+  </p>
+
+  @if (errorBackend(); as error) {
+    <p class="alert alert-error">{{ error }}</p>
+  } @else if (claimsBackend(); as claims) {
+    <p class="alert alert-ok">hotel-ms-reservas validó el token de {{ claims.name ?? claims.preferred_username }}.</p>
+    <dl class="claims">
+      <dt>aud</dt>
+      <dd>{{ claims.aud }}</dd>
+      <dt>roles</dt>
+      <dd>{{ rolesBackend().join(', ') || '—' }}</dd>
+      <dt>scp</dt>
+      <dd>{{ scopesBackend().join(', ') || '—' }}</dd>
+    </dl>
+  } @else {
+    <p class="muted">Consultando…</p>
+  }
+</section>

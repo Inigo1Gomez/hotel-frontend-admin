@@ -1,0 +1,124 @@
+<header class="page-header">
+  <div>
+    <h1>Usuarios</h1>
+    <p>Administradores y empleados del hotel registrados en hotel-ms-usuarios.</p>
+  </div>
+  <div class="form-actions">
+    <button type="button" class="btn btn-ghost" [disabled]="cargando()" (click)="cargar()">Recargar</button>
+    <button type="button" class="btn" (click)="nuevo()">Nuevo usuario</button>
+  </div>
+</header>
+
+@if (error(); as error) {
+  <p class="alert alert-error">{{ error.mensaje }}</p>
+}
+@if (aviso(); as aviso) {
+  <p class="alert alert-ok">{{ aviso }}</p>
+}
+
+@if (formAbierto()) {
+  <section class="card">
+    <h2 class="card-title">
+      {{ editando() ? 'Editar usuario' : 'Nuevo usuario' }}
+      <button type="button" class="btn btn-ghost btn-sm" (click)="usarMiCuenta()">Usar mi cuenta</button>
+    </h2>
+
+    <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+      <div class="form-grid">
+        <label class="field field-wide">
+          Entra ID (object ID del usuario)
+          <input formControlName="entraId" placeholder="00000000-0000-0000-0000-000000000000" />
+          @if (invalido('entraId')) {
+            <span class="field-error">Obligatorio.</span>
+          }
+        </label>
+        <label class="field">
+          Nombre
+          <input formControlName="name" autocomplete="name" />
+          @if (invalido('name')) {
+            <span class="field-error">Obligatorio.</span>
+          }
+        </label>
+        <label class="field">
+          Email
+          <input formControlName="email" type="email" autocomplete="email" />
+          @if (invalido('email')) {
+            <span class="field-error">Ingresa un email válido.</span>
+          }
+        </label>
+        <label class="field">
+          Rol
+          <select formControlName="role">
+            <option value="EMPLOYEE">Empleado</option>
+            <option value="ADMIN">Administrador</option>
+          </select>
+        </label>
+        <label class="field field-check">
+          <input type="checkbox" formControlName="active" />
+          Activo
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando…' : 'Guardar' }}
+        </button>
+        <button type="button" class="btn btn-ghost" (click)="cancelar()">Cancelar</button>
+      </div>
+    </form>
+  </section>
+}
+
+<section class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Creado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (admin of admins(); track admin.id) {
+          <tr>
+            <td>
+              <strong>{{ admin.name }}</strong><br />
+              <code class="muted small" [title]="admin.entraId">{{ admin.entraId.slice(0, 8) }}…</code>
+            </td>
+            <td>{{ admin.email }}</td>
+            <td>{{ admin.role === 'ADMIN' ? 'Administrador' : 'Empleado' }}</td>
+            <td>
+              <span class="badge" [class.badge-ok]="admin.active" [class.badge-off]="!admin.active">
+                {{ admin.active ? 'activo' : 'inactivo' }}
+              </span>
+            </td>
+            <td>{{ admin.createdAt | date: 'dd-MM-yyyy' }}</td>
+            <td class="actions">
+              <button type="button" class="btn btn-ghost btn-sm" (click)="editar(admin)">Editar</button>
+              <button type="button" class="btn btn-ghost btn-sm" (click)="alternarActivo(admin)">
+                {{ admin.active ? 'Desactivar' : 'Activar' }}
+              </button>
+              <button type="button" class="btn btn-danger btn-sm" (click)="eliminar(admin)">Eliminar</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty">
+              @if (cargando()) {
+                Cargando usuarios…
+              } @else if (error()) {
+                No se pudo cargar la lista.
+              } @else {
+                No hay usuarios todavía. Crea el primero con "Nuevo usuario".
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

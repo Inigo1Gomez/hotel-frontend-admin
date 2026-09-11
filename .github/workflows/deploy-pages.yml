@@ -1,0 +1,50 @@
+name: Deploy a GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test -- --watch=false
+
+      # El sitio vive en https://<usuario>.github.io/<repositorio>/, por eso el base-href.
+      - run: npx ng build --configuration production --base-href "/${{ github.event.repository.name }}/"
+
+      # GitHub Pages responde 404.html en rutas desconocidas (/dashboard, /usuarios...): así las atiende Angular.
+      - run: cp dist/hotel-frontend-admin/browser/index.html dist/hotel-frontend-admin/browser/404.html
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist/hotel-frontend-admin/browser
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex">
+  <title>Microsoft Authentication</title>
+</head>
+<body>
+  <!--
+    Redirect bridge de MSAL v5. Es el redirectUri registrado en Entra ID:
+    - flujo redirect: guarda la respuesta en sessionStorage y vuelve a la página que inició el login;
+    - popup / iframe silencioso: entrega la respuesta a la app por BroadcastChannel.
+    El script se copia desde node_modules en el build (angular.json), nunca desde un CDN.
+  -->
+  <script src="msal-redirect-bridge.min.js"></script>
+  <script>
+    msalRedirectBridge.broadcastResponseToMainFrame().catch(function (error) {
+      console.error('MSAL redirect bridge', error);
+      document.body.innerHTML = '<p>No se pudo completar el inicio de sesión. <a href="./">Volver a la aplicación</a></p>';
+    });
+  </script>
+</body>
+</html>

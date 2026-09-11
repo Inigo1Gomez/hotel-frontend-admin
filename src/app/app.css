@@ -1,0 +1,116 @@
+.shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.25rem 1rem;
+  background: var(--navy);
+  color: var(--text-on-dark);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: inherit;
+  text-decoration: none;
+  font-size: 1.05rem;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--brand);
+  font-weight: 700;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nav a {
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-on-dark-dim);
+  text-decoration: none;
+}
+
+.nav a:hover {
+  background: var(--navy-soft);
+  color: var(--text-on-dark);
+}
+
+.nav a.active {
+  background: var(--navy-line);
+  color: var(--text-on-dark);
+  font-weight: 600;
+}
+
+.session {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.session-name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.session-mail {
+  margin: 0;
+  color: var(--text-on-dark-dim);
+  overflow-wrap: anywhere;
+}
+
+.session .chips {
+  margin: 0.25rem 0 0.5rem;
+}
+
+.session .btn-ghost {
+  color: var(--text-on-dark);
+  border-color: var(--navy-line);
+}
+
+.content {
+  padding: 2rem clamp(1rem, 3vw, 2.5rem);
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .nav {
+    flex-direction: row;
+  }
+
+  .session {
+    margin-top: 0;
+    width: 100%;
+  }
+}
