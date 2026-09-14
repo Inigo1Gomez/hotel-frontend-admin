@@ -6,7 +6,7 @@ export const environment: AppEnvironment = {
   production: true,
   auth: entraConfig,
   api: {
-    usuarios: 'https://TU_API_ID.execute-api.us-east-1.amazonaws.com/usuarios',
-    reservas: 'https://TU_API_ID.execute-api.us-east-1.amazonaws.com/reservas',
+    usuarios: 'https://v5bzsbqtk7.execute-api.us-east-1.amazonaws.com/usuarios',
+    reservas: 'https://v5bzsbqtk7.execute-api.us-east-1.amazonaws.com/reservas',
   },
 };
