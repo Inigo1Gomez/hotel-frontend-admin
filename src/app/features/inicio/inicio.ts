@@ -16,7 +16,7 @@ import { isEntraConfigured } from '../../core/auth/msal.config';
 
         @if (!configured) {
           <p class="alert alert-warning">
-            Falta configurar Entra ID: completa <code>src/environments/entra.config.ts</code> (ver README).
+            Falta configurar Entra ID: completa <code>src/environments/entra.config.ts</code>.
           </p>
         }
         @if (auth.error(); as error) {

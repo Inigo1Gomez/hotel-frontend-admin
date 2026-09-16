@@ -1,7 +1,7 @@
 import { AppEnvironment } from './environment.model';
 
 /*
- * Valores del portal de Microsoft Entra ID (ver README, sección "Configurar Entra ID").
+ * Valores del portal de Microsoft Entra ID.
  * No son secretos: una SPA es un cliente público, así que pueden ir en el repositorio.
  * Los usan tanto el entorno local como el de producción.
  */
