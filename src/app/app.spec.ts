@@ -43,6 +43,6 @@ describe('App', () => {
     const { element } = await montar(true);
     expect(element.querySelector('.session-name')?.textContent).toContain('Ana Pérez');
     expect(element.querySelector('.chip')?.textContent).toContain('ADMIN');
-    expect(element.querySelectorAll('.nav a').length).toBe(3);
+    expect(element.querySelectorAll('.nav a').length).toBe(4);
   });
 });

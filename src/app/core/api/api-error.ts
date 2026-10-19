@@ -22,6 +22,8 @@ const MENSAJES: Record<string, string> = {
   USUARIO_DUPLICADO: 'Ya existe un administrador con ese Entra ID.',
   DATOS_ADMIN_INVALIDOS: 'Faltan datos obligatorios: Entra ID, nombre y email.',
   VALIDACION_RESERVA: 'hotel-ms-reservas rechazó la reserva por errores de validación.',
+  VALIDACION_REPORTE: 'hotel-ms-reservas rechazó la solicitud del informe por errores de validación.',
+  MENSAJERIA_NO_DISPONIBLE: 'hotel-ms-reservas no pudo publicar en RabbitMQ: el informe no quedó en cola.',
   JSON_INVALIDO: 'El cuerpo enviado no es JSON válido.',
   RUTA_NO_ENCONTRADA: 'La ruta no existe en el microservicio (revisa la URL del API Gateway o del proxy).',
   ERROR_INTERNO: 'Error interno del microservicio (¿la base de datos está disponible?).',

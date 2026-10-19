@@ -6,8 +6,9 @@
 </header>
 
 <p class="alert alert-info small">
-  Por ahora hotel-ms-reservas solo valida la reserva y la devuelve (no la guarda en base de datos). La lista de abajo
-  se conserva en este navegador.
+  Al aceptar la reserva, hotel-ms-reservas publica <code>reserva.creada</code> en RabbitMQ: hotel-ms-notificaciones le
+  envía al huésped el comprobante en PDF por correo y guarda una copia para los informes. La lista de abajo se conserva
+  en este navegador.
 </p>
 
 @if (error(); as error) {

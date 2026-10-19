@@ -7,7 +7,7 @@ import { ApiErrorInfo, describeApiError } from '../../core/api/api-error';
 import { ReservasApi } from '../../core/api/reservas.api';
 import { ESTADOS_RESERVA, EstadoReserva, Reserva } from '../../core/models/reserva';
 
-// hotel-ms-reservas todavía no guarda reservas: las aceptadas se recuerdan en este navegador.
+// hotel-ms-reservas no expone un GET de reservas: las aceptadas se recuerdan en este navegador.
 const STORAGE_KEY = 'hotel-admin.reservas';
 
 @Component({
@@ -81,7 +81,9 @@ export class Reservas {
         next: (aceptada) => {
           this.reservas.update((lista) => [aceptada, ...lista]);
           guardarReservas(this.reservas());
-          this.aviso.set(`hotel-ms-reservas aceptó la reserva ${aceptada.codigo}.`);
+          this.aviso.set(
+            `hotel-ms-reservas aceptó la reserva ${aceptada.codigo}: el comprobante en PDF se enviará a ${aceptada.huesped.email}.`,
+          );
           this.form.reset();
           this.form.controls.codigo.setValue(nuevoCodigo());
         },

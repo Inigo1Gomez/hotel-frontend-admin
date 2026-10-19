@@ -1,0 +1,113 @@
+<header class="page-header">
+  <div>
+    <h1>Informes</h1>
+    <p>Pide el informe de reservas en PDF; se genera en segundo plano y llega por correo.</p>
+  </div>
+</header>
+
+<p class="alert alert-info small">
+  hotel-ms-reservas publica <code>reporte.solicitado</code> en el fanout <code>hotel.reportes.fanout</code>, que entrega
+  una copia a cada cola de hotel-ms-notificaciones: la cola <strong>PDF</strong> arma el informe y lo pasa por el exchange
+  directo a la cola de <strong>correo</strong>, que lo envía adjunto; la cola de <strong>aviso</strong> manda un correo
+  diciendo que se está generando. Con un email <code>{{ dominioFallo }}</code> el aviso falla a propósito y termina en
+  <code>hotel.dlq</code>.
+</p>
+
+@if (error(); as error) {
+  <div class="alert alert-error">
+    {{ error.mensaje }}
+    @if (error.detalles.length) {
+      <ul>
+        @for (detalle of error.detalles; track $index) {
+          <li><strong>{{ detalle.campo }}</strong>: {{ detalle.mensaje }}</li>
+        }
+      </ul>
+    }
+  </div>
+}
+@if (aviso(); as aviso) {
+  <p class="alert alert-ok">{{ aviso }}</p>
+}
+
+<section class="card">
+  <h2 class="card-title">Nuevo informe</h2>
+  <form [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+    <div class="form-grid">
+      <label class="field">
+        Desde (fecha de entrada)
+        <input formControlName="desde" type="date" />
+        @if (invalido('desde')) {
+          <span class="field-error">Obligatoria.</span>
+        }
+      </label>
+      <label class="field">
+        Hasta
+        <input formControlName="hasta" type="date" />
+        @if (invalido('hasta')) {
+          <span class="field-error">Obligatoria.</span>
+        }
+      </label>
+      <label class="field">
+        Enviar a (opcional)
+        <input formControlName="email" type="email" [placeholder]="auth.account()?.username ?? 'email de tu sesión'" />
+        @if (invalido('email')) {
+          <span class="field-error">Ingresa un email válido.</span>
+        }
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn" [disabled]="enviando()">
+        {{ enviando() ? 'Enviando…' : 'Solicitar informe' }}
+      </button>
+      <span class="muted small">Sin email, el informe va al de tu sesión. Máximo 366 días.</span>
+    </div>
+  </form>
+</section>
+
+<section class="card">
+  <h2 class="card-title">Informes solicitados</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Solicitud</th>
+          <th>Periodo</th>
+          <th>Enviado a</th>
+          <th>Solicitado</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (solicitud of solicitudes(); track solicitud.id) {
+          <tr>
+            <td><code [title]="solicitud.id">{{ solicitud.id.slice(0, 8) }}</code></td>
+            <td>
+              {{ solicitud.desde | date: 'dd-MM-yyyy' : 'UTC' }} → {{ solicitud.hasta | date: 'dd-MM-yyyy' : 'UTC' }}
+            </td>
+            <td>
+              {{ solicitud.solicitadoPor.email }}
+              @if (fallaAProposito(solicitud.solicitadoPor.email)) {
+                <br /><span class="muted small">el aviso va a la DLQ</span>
+              }
+            </td>
+            <td>{{ solicitud.solicitadoEn | date: 'dd-MM-yyyy HH:mm' }}</td>
+            <td><span class="badge badge-wait">en cola</span></td>
+            <td class="actions">
+              <button type="button" class="btn btn-ghost btn-sm" (click)="quitar(solicitud)">Quitar</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty">Todavía no has solicitado informes desde este navegador.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="muted small">
+    "En cola" es lo último que confirma hotel-ms-reservas: el resultado final se ve en el correo (Mailpit) y en el panel de
+    RabbitMQ.
+  </p>
+</section>

@@ -30,6 +30,13 @@ export const routes: Routes = [
     loadComponent: () => import('./features/reservas/reservas').then((m) => m.Reservas),
   },
   {
+    path: 'informes',
+    title: 'Informes · Hotel Admin',
+    canActivate: [MsalGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () => import('./features/informes/informes').then((m) => m.Informes),
+  },
+  {
     path: 'no-autorizado',
     title: 'Sin permisos · Hotel Admin',
     canActivate: [MsalGuard],
