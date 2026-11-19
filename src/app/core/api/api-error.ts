@@ -31,6 +31,8 @@ const MENSAJES: Record<string, string> = {
   RECURSO_NO_ENCONTRADO: 'El hotel o la habitación no existe en el catálogo.',
   HABITACION_DUPLICADA: 'Ya existe una habitación con ese id.',
   JSON_INVALIDO:'El cuerpo enviado no es JSON válido.',
+  VALIDACION_REPORTE: 'hotel-ms-reservas rechazó la solicitud del informe por errores de validación.',
+  MENSAJERIA_NO_DISPONIBLE: 'hotel-ms-reservas no pudo publicar en RabbitMQ: el informe no quedó en cola.',
   RUTA_NO_ENCONTRADA: 'La ruta no existe en el microservicio (revisa la URL del API Gateway o del proxy).',
   ERROR_INTERNO: 'Error interno del microservicio (¿la base de datos está disponible?).',
 };

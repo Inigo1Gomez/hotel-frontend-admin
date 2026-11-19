@@ -51,6 +51,13 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auditoria/auditoria').then((m) => m.Auditoria),
   },
   {
+    path: 'informes',
+    title: 'Informes · Hotel Admin',
+    canActivate: [MsalGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () => import('./features/informes/informes').then((m) => m.Informes),
+  },
+  {
     path: 'no-autorizado',
     title: 'Sin permisos · Hotel Admin',
     canActivate: [MsalGuard],
