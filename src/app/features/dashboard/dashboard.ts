@@ -3,6 +3,9 @@ import { Component, computed, inject, OnInit, signal, WritableSignal } from '@an
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { describeApiError } from '../../core/api/api-error';
+import { AuditoriaApi } from '../../core/api/auditoria.api';
+import { CatalogoApi } from '../../core/api/catalogo.api';
+import { ReportesApi } from '../../core/api/reportes.api';
 import { ReservasApi } from '../../core/api/reservas.api';
 import { UsuariosApi } from '../../core/api/usuarios.api';
 import { AuthService } from '../../core/auth/auth.service';
@@ -25,10 +28,16 @@ export class Dashboard implements OnInit {
   protected readonly auth = inject(AuthService);
   private readonly usuariosApi = inject(UsuariosApi);
   private readonly reservasApi = inject(ReservasApi);
+  private readonly catalogoApi = inject(CatalogoApi);
+  private readonly reportesApi = inject(ReportesApi);
+  private readonly auditoriaApi = inject(AuditoriaApi);
 
   protected readonly servicios: EstadoServicio[] = [
     this.servicio('hotel-ms-usuarios', environment.api.usuarios, () => this.usuariosApi.health()),
     this.servicio('hotel-ms-reservas', environment.api.reservas, () => this.reservasApi.health()),
+    this.servicio('hotel-ms-catalogo', environment.api.catalogo, () => this.catalogoApi.health()),
+    this.servicio('hotel-ms-reportes', environment.api.reportes, () => this.reportesApi.health()),
+    this.servicio('hotel-ms-auditoria', environment.api.auditoria, () => this.auditoriaApi.health()),
   ];
 
   protected readonly expira = computed(() => {

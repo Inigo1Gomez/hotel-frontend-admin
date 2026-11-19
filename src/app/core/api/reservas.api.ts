@@ -3,9 +3,14 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { TokenClaims } from '../auth/jwt';
-import { Reserva } from '../models/reserva';
+import { Pagina } from '../models/pagina';
+import { EstadoReserva, FiltrosReserva, Reserva } from '../models/reserva';
+import { queryParams } from './query-params';
 
-/** hotel-ms-reservas: por ahora valida reservas (sin persistirlas) y expone /me para probar el token. */
+/**
+ * hotel-ms-reservas, rutas internas (/api/v1/reservas) protegidas con Entra ID para Admin y Operador.
+ * Cada creación o cambio de estado publica un evento en el tópico "reservas" de Kafka.
+ */
 @Injectable({ providedIn: 'root' })
 export class ReservasApi {
   private readonly http = inject(HttpClient);
@@ -15,9 +20,19 @@ export class ReservasApi {
     return this.http.get<{ status: string }>(`${environment.api.reservas}/health`);
   }
 
+  listar(filtros: FiltrosReserva): Observable<Pagina<Reserva>> {
+    return this.http.get<Pagina<Reserva>>(`${this.baseUrl}/reservas`, { params: queryParams(filtros) });
+  }
+
   crear(reserva: Reserva): Observable<Reserva> {
     return this.http
-      .post<{ data: Reserva }>(`${this.baseUrl}/user/reservas`, reserva)
+      .post<{ data: Reserva }>(`${this.baseUrl}/reservas`, reserva)
+      .pipe(map((response) => response.data));
+  }
+
+  cambiarEstado(id: string, estado: EstadoReserva): Observable<Reserva> {
+    return this.http
+      .patch<{ data: Reserva }>(`${this.baseUrl}/reservas/${encodeURIComponent(id)}/estado`, { estado })
       .pipe(map((response) => response.data));
   }
 

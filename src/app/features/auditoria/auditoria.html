@@ -1,0 +1,146 @@
+<header class="page-header">
+  <div>
+    <h1>Auditoría</h1>
+    <p>
+      Quién hizo qué, cuándo y desde dónde. Lo registra hotel-ms-auditoria leyendo los tópicos <code>reservas</code> y
+      <code>catalogo</code>.
+    </p>
+  </div>
+  <app-refresco-control
+    [(activo)]="autoRefresco"
+    [cadaMs]="refrescoMs"
+    [ultima]="ultima()"
+    [cargando]="cargando()"
+    (actualizar)="recargar()"
+  />
+</header>
+
+<form class="filters card" [formGroup]="filtrosForm" (ngSubmit)="buscar()">
+  <label class="field">
+    Usuario
+    <input formControlName="usuario" placeholder="nombre, id o invitado" />
+  </label>
+  <label class="field">
+    Entidad
+    <select formControlName="entidad">
+      <option value="">Todas</option>
+      <option value="RESERVA">Reservas</option>
+      <option value="HABITACION">Habitaciones</option>
+    </select>
+  </label>
+  <label class="field">
+    Tipo de evento
+    <select formControlName="tipo">
+      <option value="">Todos</option>
+      @for (tipo of tipos; track tipo) {
+        <option [value]="tipo">{{ tipo }}</option>
+      }
+    </select>
+  </label>
+  <label class="field">
+    Código o habitación
+    <input formControlName="codigo" placeholder="RES-… o vpo-001-room-1" />
+  </label>
+  <label class="field">
+    Desde
+    <input formControlName="desde" type="date" />
+  </label>
+  <label class="field">
+    Hasta
+    <input formControlName="hasta" type="date" />
+  </label>
+  <div class="filters-actions">
+    <button type="submit" class="btn btn-sm">Buscar</button>
+    <button type="button" class="btn btn-ghost btn-sm" (click)="limpiarFiltros()">Limpiar</button>
+  </div>
+</form>
+
+@if (error(); as error) {
+  <div class="alert alert-error">
+    {{ error.mensaje }}
+    @if (error.detalles.length) {
+      <ul>
+        @for (detalle of error.detalles; track $index) {
+          <li><strong>{{ detalle.campo }}</strong>: {{ detalle.mensaje }}</li>
+        }
+      </ul>
+    }
+  </div>
+}
+
+<section class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Cuándo</th>
+          <th>Evento</th>
+          <th>Quién</th>
+          <th>Desde dónde</th>
+          <th>Sobre qué</th>
+          <th>Detalle</th>
+          <th>Kafka</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (registro of pagina()?.data ?? []; track registro.eventoId) {
+          <tr [class.row-new]="nuevos().has(registro.eventoId)">
+            <td>{{ registro.ocurridoEn | date: 'dd-MM-yyyy HH:mm:ss' }}</td>
+            <td><span class="badge" [class]="claseTipo(registro.tipo)">{{ registro.tipo }}</span></td>
+            <td>
+              {{ actor(registro) }}<br />
+              <span class="muted small">
+                {{ registro.actor.tipo }}
+                @if (registro.actor.roles.length) {
+                  · {{ registro.actor.roles.join(', ') }}
+                }
+              </span>
+            </td>
+            <td>
+              {{ registro.origen.canal }}<br />
+              <span class="muted small">{{ registro.origen.ip ?? '—' }}</span>
+            </td>
+            <td>
+              <strong>{{ registro.objetivo.referencia }}</strong><br />
+              <span class="muted small">
+                @if (registro.objetivo.estadoAnterior) {
+                  {{ registro.objetivo.estadoAnterior }} → {{ registro.objetivo.estado }}
+                } @else if (registro.objetivo.estado) {
+                  {{ registro.objetivo.estado }}
+                } @else {
+                  {{ registro.objetivo.idHabitacion }}
+                }
+              </span>
+            </td>
+            <td class="wrap small">{{ registro.detalle ?? '—' }}</td>
+            <td>
+              <code class="small">{{ registro.kafka.topico }}</code><br />
+              <span class="muted small">p{{ registro.kafka.particion }} · offset {{ registro.kafka.offset }}</span>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty">{{ cargando() ? 'Cargando…' : 'No hay registros con esos filtros.' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (pagina(); as pagina) {
+    <div class="pager">
+      <span class="muted small">{{ pagina.total }} registros · página {{ pagina.pagina }} de {{ totalPaginas() }}</span>
+      <button type="button" class="btn btn-ghost btn-sm" [disabled]="pagina.pagina <= 1" (click)="irAPagina(pagina.pagina - 1)">
+        Anterior
+      </button>
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm"
+        [disabled]="pagina.pagina >= totalPaginas()"
+        (click)="irAPagina(pagina.pagina + 1)"
+      >
+        Siguiente
+      </button>
+    </div>
+  }
+</section>
