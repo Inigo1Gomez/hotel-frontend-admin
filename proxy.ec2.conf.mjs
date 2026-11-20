@@ -21,4 +21,7 @@ function microservicio(prefijo, puerto) {
 export default {
   '/api/usuarios': microservicio('/api/usuarios', 8082),
   '/api/reservas': microservicio('/api/reservas', 8081),
+  '/api/catalogo': microservicio('/api/catalogo', 8088),
+  '/api/reportes': microservicio('/api/reportes', 8086),
+  '/api/auditoria': microservicio('/api/auditoria', 8087),
 };

@@ -65,6 +65,9 @@ export function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
     protectedResourceMap: new Map([
       [`${environment.api.usuarios}/*`, apiScopes],
       [`${environment.api.reservas}/*`, apiScopes],
+      [`${environment.api.catalogo}/*`, apiScopes],
+      [`${environment.api.reportes}/*`, apiScopes],
+      [`${environment.api.auditoria}/*`, apiScopes],
     ]),
     strictMatching: true,
   };

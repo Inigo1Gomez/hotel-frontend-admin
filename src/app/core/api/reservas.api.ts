@@ -3,12 +3,15 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { TokenClaims } from '../auth/jwt';
+import { Pagina } from '../models/pagina';
 import { ReporteEnCola, SolicitudReporte } from '../models/reporte';
-import { Reserva } from '../models/reserva';
+import { EstadoReserva, FiltrosReserva, Reserva } from '../models/reserva';
+import { queryParams } from './query-params';
 
 /**
- * hotel-ms-reservas: valida reservas y solicitudes de informe y las publica en RabbitMQ
- * (hotel-ms-notificaciones genera los PDF y envía los correos). Expone /me para probar el token.
+ * hotel-ms-reservas, rutas internas (/api/v1/reservas) protegidas con Entra ID para Admin y Operador.
+ * Cada creación o cambio de estado publica un evento en el tópico "reservas" de Kafka.
+ * Las solicitudes de informe se publican en RabbitMQ (hotel-ms-notificaciones genera el PDF).
  */
 @Injectable({ providedIn: 'root' })
 export class ReservasApi {
@@ -19,9 +22,19 @@ export class ReservasApi {
     return this.http.get<{ status: string }>(`${environment.api.reservas}/health`);
   }
 
+  listar(filtros: FiltrosReserva): Observable<Pagina<Reserva>> {
+    return this.http.get<Pagina<Reserva>>(`${this.baseUrl}/reservas`, { params: queryParams(filtros) });
+  }
+
   crear(reserva: Reserva): Observable<Reserva> {
     return this.http
-      .post<{ data: Reserva }>(`${this.baseUrl}/user/reservas`, reserva)
+      .post<{ data: Reserva }>(`${this.baseUrl}/reservas`, reserva)
+      .pipe(map((response) => response.data));
+  }
+
+  cambiarEstado(id: string, estado: EstadoReserva): Observable<Reserva> {
+    return this.http
+      .patch<{ data: Reserva }>(`${this.baseUrl}/reservas/${encodeURIComponent(id)}/estado`, { estado })
       .pipe(map((response) => response.data));
   }
 

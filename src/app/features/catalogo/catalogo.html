@@ -1,0 +1,172 @@
+<header class="page-header">
+  <div>
+    <h1>Catálogo</h1>
+    <p>
+      Hoteles y habitaciones de hotel-ms-catalogo. Cada cambio se publica completo en el tópico compactado
+      <code>catalogo</code> (key = id de la habitación).
+    </p>
+  </div>
+  <label class="field">
+    Hotel
+    <select [value]="hotel()?.id ?? ''" (change)="elegirHotel($any($event.target).value)">
+      @for (hotel of hoteles(); track hotel.id) {
+        <option [value]="hotel.id">{{ hotel.nombre }}</option>
+      }
+    </select>
+  </label>
+</header>
+
+@if (error(); as error) {
+  <div class="alert alert-error">
+    {{ error.mensaje }}
+    @if (error.detalles.length) {
+      <ul>
+        @for (detalle of error.detalles; track $index) {
+          <li><strong>{{ detalle.campo }}</strong>: {{ detalle.mensaje }}</li>
+        }
+      </ul>
+    }
+  </div>
+}
+@if (aviso(); as aviso) {
+  <p class="alert alert-ok">{{ aviso }}</p>
+}
+@if (!puedeEditar()) {
+  <p class="alert alert-info small">Solo el rol ADMIN puede cambiar el catálogo. Como Operador lo ves en modo lectura.</p>
+}
+
+@if (hotel(); as hotel) {
+  <section class="card">
+    <h2 class="card-title">
+      <span>
+        {{ hotel.nombre }}
+        <span class="muted small">· {{ hotel.tipo }} · {{ hotel.estrellas }}★ · {{ hotel.barrio }}</span>
+      </span>
+      @if (hotel.precioDesde !== null) {
+        <span class="muted small">desde {{ hotel.precioDesde | currency: 'CLP' : 'symbol-narrow' : '1.0-0' }}</span>
+      }
+    </h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Habitación</th>
+            <th>Capacidad</th>
+            <th>Precio por noche</th>
+            <th>Unidades</th>
+            <th>Estado</th>
+            <th>Actualizada</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (habitacion of hotel.habitaciones; track habitacion.id) {
+            <tr [class.row-off]="!habitacion.activa">
+              <td>
+                <strong>{{ habitacion.nombre }}</strong><br />
+                <code class="muted">{{ habitacion.id }}</code>
+              </td>
+              <td>{{ habitacion.capacidad }} · {{ habitacion.camas }}</td>
+              @if (puedeEditar()) {
+                <td><input #precio class="input-sm" type="number" min="1" step="1000" [value]="habitacion.precioPorNoche" /></td>
+                <td><input #unidades class="input-xs" type="number" min="0" max="100" step="1" [value]="habitacion.unidades" /></td>
+                <td><ng-container *ngTemplateOutlet="estado; context: { $implicit: habitacion }" /></td>
+                <td class="muted small">{{ habitacion.actualizadaEn | date: 'dd-MM-yyyy HH:mm' }}</td>
+                <td class="actions">
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    [disabled]="guardando() !== null"
+                    (click)="guardar(habitacion, precio.valueAsNumber, unidades.valueAsNumber)"
+                  >
+                    {{ guardando() === habitacion.id ? '…' : 'Guardar' }}
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-sm" [disabled]="guardando() !== null" (click)="alternarActiva(habitacion)">
+                    {{ habitacion.activa ? 'Desactivar' : 'Activar' }}
+                  </button>
+                </td>
+              } @else {
+                <td>{{ habitacion.precioPorNoche | currency: 'CLP' : 'symbol-narrow' : '1.0-0' }}</td>
+                <td>{{ habitacion.unidades }}</td>
+                <td><ng-container *ngTemplateOutlet="estado; context: { $implicit: habitacion }" /></td>
+                <td class="muted small">{{ habitacion.actualizadaEn | date: 'dd-MM-yyyy HH:mm' }}</td>
+                <td></td>
+              }
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty">Este hotel no tiene habitaciones.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  @if (puedeEditar()) {
+    <section class="card">
+      <h2 class="card-title">Nueva habitación en {{ hotel.nombre }}</h2>
+      <form [formGroup]="form" (ngSubmit)="crear()" novalidate>
+        <div class="form-grid">
+          <label class="field">
+            Id
+            <input formControlName="id" [placeholder]="hotel.id + '-room-5'" />
+            @if (invalido('id')) {
+              <span class="field-error">Minúsculas, números y guiones (3 a 64).</span>
+            }
+          </label>
+          <label class="field">
+            Nombre
+            <input formControlName="nombre" />
+            @if (invalido('nombre')) {
+              <span class="field-error">Obligatorio.</span>
+            }
+          </label>
+          <label class="field">
+            Camas
+            <input formControlName="camas" placeholder="1 cama king" />
+            @if (invalido('camas')) {
+              <span class="field-error">Obligatorio.</span>
+            }
+          </label>
+          <label class="field">
+            Capacidad
+            <input formControlName="capacidad" type="number" min="1" max="12" />
+          </label>
+          <label class="field">
+            m²
+            <input formControlName="metrosCuadrados" type="number" min="1" max="500" />
+          </label>
+          <label class="field">
+            Precio por noche (CLP)
+            <input formControlName="precioPorNoche" type="number" min="1" step="1000" />
+          </label>
+          <label class="field">
+            Unidades
+            <input formControlName="unidades" type="number" min="0" max="100" />
+          </label>
+          <label class="field field-wide">
+            Descripción
+            <textarea formControlName="descripcion" rows="2"></textarea>
+            @if (invalido('descripcion')) {
+              <span class="field-error">Obligatoria.</span>
+            }
+          </label>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn" [disabled]="guardando() !== null">
+            {{ guardando() === 'nueva' ? 'Creando…' : 'Crear habitación' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  }
+} @else if (cargando()) {
+  <p class="muted">Cargando catálogo…</p>
+}
+
+<ng-template #estado let-habitacion>
+  <span class="badge" [class.badge-ok]="habitacion.activa" [class.badge-off]="!habitacion.activa">
+    {{ habitacion.activa ? 'activa' : 'inactiva' }}
+  </span>
+</ng-template>

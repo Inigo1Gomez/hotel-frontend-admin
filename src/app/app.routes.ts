@@ -30,6 +30,27 @@ export const routes: Routes = [
     loadComponent: () => import('./features/reservas/reservas').then((m) => m.Reservas),
   },
   {
+    path: 'catalogo',
+    title: 'Catálogo · Hotel Admin',
+    canActivate: [MsalGuard, roleGuard],
+    data: { roles: ['ADMIN', 'EMPLOYEE'] },
+    loadComponent: () => import('./features/catalogo/catalogo').then((m) => m.Catalogo),
+  },
+  {
+    path: 'kpis',
+    title: 'KPIs · Hotel Admin',
+    canActivate: [MsalGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () => import('./features/kpis/kpis').then((m) => m.Kpis),
+  },
+  {
+    path: 'auditoria',
+    title: 'Auditoría · Hotel Admin',
+    canActivate: [MsalGuard, roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () => import('./features/auditoria/auditoria').then((m) => m.Auditoria),
+  },
+  {
     path: 'informes',
     title: 'Informes · Hotel Admin',
     canActivate: [MsalGuard, roleGuard],

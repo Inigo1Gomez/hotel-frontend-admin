@@ -1,0 +1,139 @@
+<header class="page-header">
+  <div>
+    <h1>KPIs</h1>
+    <p>
+      Calculados por hotel-ms-reportes (consumer group <code>reportes</code>) a partir del tópico <code>reservas</code>.
+    </p>
+  </div>
+  <app-refresco-control
+    [(activo)]="autoRefresco"
+    [cadaMs]="refrescoMs"
+    [ultima]="ultima()"
+    [cargando]="cargando()"
+    (actualizar)="recargar()"
+  />
+</header>
+
+<form class="filters card" [formGroup]="filtrosForm" (ngSubmit)="filtrar()">
+  <label class="field">
+    Entrada desde
+    <input formControlName="desde" type="date" />
+  </label>
+  <label class="field">
+    Entrada hasta
+    <input formControlName="hasta" type="date" />
+  </label>
+  <div class="filters-actions">
+    <button type="submit" class="btn btn-sm">Filtrar</button>
+    <button type="button" class="btn btn-ghost btn-sm" (click)="limpiar()">Todo</button>
+  </div>
+</form>
+
+@if (error(); as error) {
+  <p class="alert alert-error">{{ error.mensaje }}</p>
+}
+
+@if (kpis(); as kpis) {
+  <p class="muted small live" [class.live-new]="hayNuevo()">
+    @if (hayNuevo()) {
+      ● Llegó un evento nuevo desde Kafka.
+    } @else if (kpis.ultimaActualizacion) {
+      Último evento procesado: {{ kpis.ultimaActualizacion | date: 'dd-MM-yyyy HH:mm:ss' }}
+    } @else {
+      Todavía no llegan eventos al consumer group.
+    }
+  </p>
+
+  <div class="tiles" [class.tiles-new]="hayNuevo()">
+    <div class="tile">
+      <span class="tile-label">Reservas</span>
+      <strong class="tile-value">{{ kpis.totalReservas }}</strong>
+    </div>
+    <div class="tile">
+      <span class="tile-label">Ingresos</span>
+      <strong class="tile-value">{{ kpis.ingresos | currency: 'CLP' : 'symbol-narrow' : '1.0-0' }}</strong>
+      <span class="tile-hint">confirmadas y completadas</span>
+    </div>
+    <div class="tile">
+      <span class="tile-label">Noches vendidas</span>
+      <strong class="tile-value">{{ kpis.nochesVendidas }}</strong>
+    </div>
+    <div class="tile">
+      <span class="tile-label">Huéspedes</span>
+      <strong class="tile-value">{{ kpis.huespedes }}</strong>
+    </div>
+    <div class="tile">
+      <span class="tile-label">Tasa de cancelación</span>
+      <strong class="tile-value">{{ kpis.tasaCancelacion | number: '1.0-1' }} %</strong>
+    </div>
+    <div class="tile">
+      <span class="tile-label">Tiempo hasta confirmar</span>
+      <strong class="tile-value">
+        @if (kpis.minutosPromedioConfirmacion !== null) {
+          {{ kpis.minutosPromedioConfirmacion | number: '1.0-0' }} min
+        } @else {
+          —
+        }
+      </strong>
+      <span class="tile-hint">promedio</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2 class="card-title">Por estado</h2>
+      @for (fila of kpis.porEstado; track fila.estado) {
+        <div class="bar-row">
+          <span class="badge" [class]="claseEstado(fila.estado)">{{ fila.estado }}</span>
+          <span class="bar"><span class="bar-fill" [style.width.%]="porcentaje(fila.cantidad, maximoEstado())"></span></span>
+          <strong>{{ fila.cantidad }}</strong>
+        </div>
+      } @empty {
+        <p class="muted">Sin reservas.</p>
+      }
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">Por canal</h2>
+      @for (fila of kpis.porCanal; track fila.canal) {
+        <div class="bar-row">
+          <span>{{ canales[fila.canal] ?? fila.canal }}</span>
+          <span class="bar"><span class="bar-fill" [style.width.%]="porcentaje(fila.cantidad, totalCanales())"></span></span>
+          <strong>{{ fila.cantidad }}</strong>
+        </div>
+      } @empty {
+        <p class="muted">Sin reservas.</p>
+      }
+    </section>
+  </div>
+
+  <section class="card">
+    <h2 class="card-title">Habitaciones con más reservas</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Habitación</th>
+            <th>Reservas</th>
+            <th>Ingresos</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (fila of kpis.topHabitaciones; track fila.idHabitacion) {
+            <tr>
+              <td><code>{{ fila.idHabitacion }}</code></td>
+              <td>{{ fila.reservas }}</td>
+              <td>{{ fila.ingresos | currency: 'CLP' : 'symbol-narrow' : '1.0-0' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3" class="empty">Sin reservas.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+} @else if (cargando()) {
+  <p class="muted">Cargando KPIs…</p>
+}
